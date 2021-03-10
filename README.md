@@ -26,7 +26,7 @@ and estimate allelic rates for per cell. These estimates can be used for downstr
 such as visualization of variable regions and effect size determination.
 
 ## Examples
-Check out the example [Jupyter notebook](https://github.com/tohein/dali/blob/main/examples/dali_example.ipynb), highlighting key features.
+Check out the example [Jupyter notebook](https://github.com/PMBio/scdali/blob/main/examples/scdali_example.ipynb), highlighting key features.
 
 ## Background
 Allelic imbalance can be a proxy for *genetic effects*. Significantly variable genes or regions as identified by **scDALI** can be indicative of cell-state-genotype interactions. In addition to differential *total* gene expression or chromatin accessibility, heterogeneous allelic imbalance therefore provides an orthgonal view of cell-state-specific regulation.
