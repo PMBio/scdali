@@ -21,8 +21,7 @@ scDALI implements three different score-based tests:
 - scDALI-Hom - test for homogeneous allelic imbalance
 - scDALI-Joint - test for either kind of allelic imbalance
 
-In addition scDALI the package includes methods for approximationg the scDALI generative model
-and estimate allelic rates for per cell. These estimates can be used for downstream analyses,
+The scDALI package allows for estimating allelic rates in each cell as a function of the cell state. These estimates can be used for downstream analyses,
 such as visualization of variable regions and effect size determination.
 
 ## Examples
