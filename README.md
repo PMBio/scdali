@@ -1,8 +1,6 @@
 # scDALI - Discovering allelic imbalance in single-cells
 
-**scDALI** is a statistical tool for detecting allelic imbalance in single-cell
-sequencing data. **scDALI** stands for **single-cell differential allelic imbalance**
-and can be used to test for heterogeneous and homogeneous allelic imbalance in
+**scDALI** (single-cell differential allelic imbalance) is a statistical framework for detecting allelic imbalance from
 single-cell sequencing data.
 
 ## Install scDALI
