@@ -16,12 +16,12 @@ pip install git+https://github.com/PMBio/scdali
 - the cell cluster / cell type
 - the coordinates in a lower dimensional-embedding, such as PCA or UMAP
 
-scDALI implements three different tests:
+scDALI implements three different score-based tests:
 - scDALI-Het - test for heterogeneous (cell-state-specific) allelic imbalance
 - scDALI-Hom - test for homogeneous allelic imbalance
 - scDALI-Joint - test for either kind of allelic imbalance
 
-In addition DALI the package includes methods for approximationg the DALI generative model
+In addition scDALI the package includes methods for approximationg the scDALI generative model
 and estimate allelic rates for per cell. These estimates can be used for downstream analyses,
 such as visualization of variable regions and effect size determination.
 
