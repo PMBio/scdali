@@ -1,0 +1,7 @@
+chiscore==0.2.2
+gpflow==2.1.3
+joblib==0.17.0
+numpy==1.18.0
+scipy==1.5.3
+statsmodels==0.12.0
+tqdm==4.50.2
