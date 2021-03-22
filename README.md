@@ -1,7 +1,7 @@
 # scDALI - Discovering allelic imbalance in single-cells
 
 **scDALI** (single-cell differential allelic imbalance) is a statistical framework for detecting allelic imbalance from
-single-cell sequencing data.
+single-cell sequencing data [1].
 
 ## Install scDALI
 To install the latest version from GitHub, you can use `pip`:
@@ -13,8 +13,8 @@ pip install git+https://github.com/PMBio/scdali
 **scDALI** is intended for the application to single-cell sequencing data such as transcriptome (scRNA-seq) or open-chromatin (e.g. scATAC-seq) measurements. At the core is a Beta-Binomial generalized linear mixed-effects model, capturing allelic ratios as a function of the cell state while accounting for Binomial variance and residual overdispersion. Here, *cell states* are usually defined based on the total (non-allele-specific) signal. Depending on the application, a suitable cell-state definition could be
 
 - the position along a (pseudo-) temporal trajectory
-- the cell cluster / cell type
-- the coordinates in a lower dimensional-embedding, such as PCA or UMAP
+- a cell clustering / cell type annotation
+- coordinates in a lower dimensional-embedding, for example, as obtained from PCA, UMAP or Variational autoencoder models (e.g. [SCVI](https://scvi-tools.org/) or our [ATAC-seq specific implementation](https://github.com/tohein/tempo)[1])
 
 scDALI implements three different score-based tests:
 - scDALI-Het - test for heterogeneous (cell-state-specific) allelic imbalance
@@ -32,3 +32,6 @@ Allelic imbalance can be a proxy for *genetic effects*. Significantly variable g
 
 ![dali abstract](./doc/dali_abstract.png)
 
+## References
+
+[1] T. Heinen, S. Secchia, J. Reddington, B. Zhao, E.E.M. Furlong, O. Stegle. [scDALI: Modelling allelic heterogeneity of DNA accessibility in single-cells reveals context-specific genetic regulation](https://www.biorxiv.org/content/10.1101/2021.03.19.436142v1). Preprint, bioRxiv (2021).
