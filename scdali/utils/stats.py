@@ -1,5 +1,6 @@
 """Stats utility functions."""
 
+from scdali.utils.matop import atleast_2d_column
 import numpy as np
 from scipy.special import digamma
 from scipy.special import polygamma
@@ -141,7 +142,7 @@ def fit_polya_precision(data, m, s_init=None, tol=1e-6, maxiter=1000):
         Estimated precision parameter and number of iterations.
     """
     data = np.asarray(data, float)
-    m = np.asarray(m, float).ravel()
+    m = np.atleast_2d(m)
 
     N, K = data.shape
     n = data.sum(1, keepdims=True)
@@ -237,3 +238,62 @@ def reparameterize_polya_ms(m, s):
         Alpha vector.
     """
     return s * m
+
+
+def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
+    """Fit Beta-Binomial regression model.
+    
+    Uses iteratively reweighted least squares / Fisher scoring.
+
+    Args:
+        a: Vector successes.
+        d: Vector of trials.
+        X: Design matrix.
+        theta: Dispersion parameter. If None, estimate alternatingly.
+        maxiter: Maximum number of iterations
+        tol: Break if mean absolute change in estimated parameters is below tol.
+
+    Returns:
+        Regression coefficients and estimated precision.
+    """
+    from numpy_sugar.linalg import rsolve
+
+    a = atleast_2d_column(a)
+    d = atleast_2d_column(d)
+    X = atleast_2d_column(X)
+
+    y = a / d
+
+    fit_precision = theta is None
+    if fit_precision:
+        data = np.hstack([a, d-a])
+    
+    beta = rsolve(X.T @ X, X.T @ y)
+    for i in range(maxiter):
+        print(i)
+
+        eta = X @ beta
+        mu = logistic(eta)
+
+        if fit_precision:
+            m = np.hstack([mu, 1-mu])
+            maxiter = min(10**(i+1), 1000)
+            (s, niter) = fit_polya_precision(data=data, m=m, maxiter=maxiter)
+            print('Polya precision niter: %d' % niter)
+            theta = 1/s
+
+        gprime = 1 / ((1 - mu) * mu)
+        z = eta + gprime * (y - mu)
+
+        W = d * mu * (1 - mu) * (theta + 1)
+        W = W / (d * theta + 1)
+
+        XW = (W * X).T
+        beta_new = rsolve(XW @ X, XW @ z)
+
+        if np.abs(beta - beta_new).mean() < tol:
+            break
+
+        beta = beta_new
+    return beta, theta
+
