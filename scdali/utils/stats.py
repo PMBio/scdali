@@ -241,7 +241,7 @@ def reparameterize_polya_ms(m, s):
 
 
 def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
-    """Fit Beta-Binomial regression model.
+    """Fits Beta-Binomial regression model.
     
     Uses iteratively reweighted least squares / Fisher scoring.
 
@@ -254,7 +254,8 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
         tol: Break if mean absolute change in estimated parameters is below tol.
 
     Returns:
-        Regression coefficients and estimated precision.
+        Regression coefficients, estimated dispersion parameter and number of 
+        iterations.
     """
     from numpy_sugar.linalg import rsolve
 
@@ -295,5 +296,5 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
             break
 
         beta = beta_new
-    return beta, theta
+    return beta, theta, i
 
