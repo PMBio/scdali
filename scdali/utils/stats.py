@@ -263,25 +263,28 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
     d = atleast_2d_column(d)
     X = atleast_2d_column(X)
 
-    y = a / d
-
-    fit_precision = theta is None
-    if fit_precision:
+    fit_dispersion = theta is None
+    if fit_dispersion:
         data = np.hstack([a, d-a])
+
+    y = a / d
+    is_bernoulli = False
+    if np.array_equal(y, y.astype(bool)) and fit_dispersion:
+        is_bernoulli = True
+        d = (d > 0).astype(float)
+        theta = 0
+        fit_dispersion = False
     
     beta = rsolve(X.T @ X, X.T @ y)
     for i in range(maxiter):
-        print(i)
-
         eta = X @ beta
         mu = logistic(eta)
 
-        if fit_precision:
+        if fit_dispersion:
             m = np.hstack([mu, 1-mu])
             maxiter = min(10**(i+1), 1000)
             (s, niter) = fit_polya_precision(data=data, m=m, maxiter=maxiter)
-            print('Polya precision niter: %d' % niter)
-            theta = 1/s
+            theta = 1/s 
 
         gprime = 1 / ((1 - mu) * mu)
         z = eta + gprime * (y - mu)
@@ -296,5 +299,8 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
             break
 
         beta = beta_new
+
+    if is_bernoulli:
+        theta = np.inf
     return beta, theta, i
 
