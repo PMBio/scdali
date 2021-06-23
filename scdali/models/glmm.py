@@ -12,6 +12,8 @@ from scdali.utils.stats import logit, logistic, reparameterize_polya_alpha
 from scdali.utils.stats import fit_polya, fit_polya_precision, fit_bb_glm
 
 
+JITTER = 1e-7
+
 class DaliJoint(DaliModule):
     """Test for allelic imbalance in single cells."""
 
@@ -123,7 +125,8 @@ class DaliJoint(DaliModule):
         self.y = eta0 + self.gprime * (self.r - mu0) - offset
 
         if self.X is not None:
-            self.Lh = cho_factor((self.W0 * self.X).T @ self.X)
+            self.Lh = cho_factor(
+                (self.W0 * self.X).T @ self.X + JITTER * np.eye(self.X.shape[1]))
 
 
     def test(self, return_rho=False):
