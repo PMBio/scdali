@@ -60,7 +60,7 @@ class DaliJoint(DaliModule):
 
             # add intercept
             ones = np.ones_like(self.r)
-            if X is not None:
+            if self.X is not None:
                 self.X = np.hstack([self.X, ones])
             else:
                 self.X = ones
