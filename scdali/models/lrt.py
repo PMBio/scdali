@@ -23,8 +23,7 @@ class BetaBinomLRT(DaliModule):
             binomial (bool): Use a Binomial likelihood (True) instead of a Beta-
                 Binomial model (False).
         """
-        E = np.ones_like(a)
-        super().__init__(a, d, E)
+        super().__init__(a, d)
         self.r = self.a / self.d
         self.m0 = base_rate
         self.binomial = binomial
