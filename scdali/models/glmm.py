@@ -108,7 +108,7 @@ class DaliJoint(DaliModule):
         if np.isinf(self.theta0):
             # Bernoulli model, substitute limit
             d = (d > 0).astype(float)
-            theta = 0
+            theta0 = 0
 
         # compute the inverse noise covariance
         # for a Binomial likelihood (theta0=0) W0 simply corresponds to the
