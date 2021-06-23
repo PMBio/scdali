@@ -105,7 +105,7 @@ def fit_polya(data, alpha_init=None, tol=1e-6, maxiter=1000):
         s, _ = fit_polya_precision(data=data, m=m, s_init=s)
         if np.isinf(s):
             # probably dealing with binomial distribution
-            return np.ones_like(m) * np.inf
+            return np.ones_like(m) * np.inf, 0
         alpha = reparameterize_polya_ms(m, s)
     else:
         alpha = np.asarray(alpha_init, float).ravel()
@@ -240,8 +240,8 @@ def reparameterize_polya_ms(m, s):
     return s * m
 
 
-def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
-    """Fits Beta-Binomial regression model.
+def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
+    """Fits generalized linear model with Beta-Binomial likelihood.
     
     Uses iteratively reweighted least squares / Fisher scoring.
 
@@ -249,6 +249,7 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
         a: Vector successes.
         d: Vector of trials.
         X: Design matrix.
+        offset: Untrainable offset parameter.
         theta: Dispersion parameter. If None, estimate alternatingly.
         maxiter: Maximum number of iterations
         tol: Break if mean absolute change in estimated parameters is below tol.
@@ -263,11 +264,10 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
     d = atleast_2d_column(d)
     X = atleast_2d_column(X)
 
-    fit_dispersion = theta is None
-    if fit_dispersion:
-        data = np.hstack([a, d-a])
-
     y = a / d
+
+    fit_dispersion = theta is None
+
     is_bernoulli = False
     if np.array_equal(y, y.astype(bool)) and fit_dispersion:
         is_bernoulli = True
@@ -275,9 +275,13 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
         theta = 0
         fit_dispersion = False
     
+    if fit_dispersion:
+        data = np.hstack([a, d-a])
+
     beta = rsolve(X.T @ X, X.T @ y)
+    converged = False
     for i in range(maxiter):
-        eta = X @ beta
+        eta = X @ beta + offset
         mu = logistic(eta)
 
         if fit_dispersion:
@@ -287,7 +291,7 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
             theta = 1/s 
 
         gprime = 1 / ((1 - mu) * mu)
-        z = eta + gprime * (y - mu)
+        z = eta + gprime * (y - mu) - offset
 
         W = d * mu * (1 - mu) * (theta + 1)
         W = W / (d * theta + 1)
@@ -296,9 +300,13 @@ def fit_bb_regression(a, d, X, theta=None, maxiter=100, tol=1e-5):
         beta_new = rsolve(XW @ X, XW @ z)
 
         if np.abs(beta - beta_new).mean() < tol:
+            converged = True
             break
 
         beta = beta_new
+    
+    if not converged:
+        print('Warning: Model did not converge. Try increasing maxiter.')
 
     if is_bernoulli:
         theta = np.inf
