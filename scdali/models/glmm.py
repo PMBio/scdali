@@ -1,13 +1,15 @@
 """Dali model."""
 
 
+from scdali.utils.matop import atleast_2d_column
 import numpy as np
 from scipy.stats import chi2
+from scipy.linalg import cho_factor, cho_solve
 from chiscore import davies_pvalue, optimal_davies_pvalue, liu_sf
 
 from scdali.models.core import DaliModule
-from scdali.utils.stats import logit, reparameterize_polya_alpha
-from scdali.utils.stats import fit_polya, fit_polya_precision
+from scdali.utils.stats import logit, logistic, reparameterize_polya_alpha
+from scdali.utils.stats import fit_polya, fit_polya_precision, fit_bb_glm
 
 
 class DaliJoint(DaliModule):
@@ -18,6 +20,7 @@ class DaliJoint(DaliModule):
         a,
         d,
         E,
+        X=None,
         base_rate=.5,
         test_cell_state_only=False,
         rhos=None,
@@ -27,89 +30,100 @@ class DaliJoint(DaliModule):
         Args
             a: Counts for the alternative allele in each cell.
             d: Total counts for both alleles in each cell.
-            E: Environment / cell-state matrix. Note that for the joint test,
-                (i.e. test_cel_state_only=False) E should by normalized by the
+            E: Environment / cell-state matrix. For the joint test, (i.e.
+                test_cell_state_only=False) it is advised to normalize E by the
                 expected sample variance to make the value of rho more
                 interpretable.
+            X: Covariate matrix. Please note that X must not be used to add an
+                intercept term (column of ones). An intercept is automatically
+                added if test_cell_state_only=True. Otherwise it is part of the 
+                alternative model.
             base_rate: Base/null mean rate (ignored if test_cell_state_only)
-            test_cell_state_only: Do not test for global allelic imbalance. In
-                this case the base allelic rate is treated as a fixed effect and
-                optimized during .fit().
+            test_cell_state_only: If true, test only for heterogeneous
+                imbalance. 
             rhos: Grid for optimizing rho. Ignored if test_cell_state_only.
             binomial (bool): Use a Binomial likelihood (True) instead of a Beta-
                 Binomial model (False).
         """
-        super().__init__(a, d, E)
+        super().__init__(a=a, d=d, E=E, X=X)
         self.r = self.a / self.d
-
         if base_rate <= 0 or base_rate >= 1:
             raise ValueError('base_rate has to be between 0 and 1.')
 
         self.test_cell_state_only = test_cell_state_only
         self.binomial = binomial
+        self.base_rate = base_rate
 
         if test_cell_state_only:
-            # consider only cell-state kernel
+            # consider only heterogeneous kernel
             rhos = [0]
-        else:
-            self.m0 = base_rate
+
+            # add intercept
+            ones = np.ones_like(self.r)
+            if X is not None:
+                self.X = np.hstack([self.X, ones])
+            else:
+                self.X = ones
 
         if rhos is None:
             self.rhos = np.linspace(start=0, stop=1, num=10)
         else:
             self.rhos = rhos
 
+        self.beta0 = None
+        self.theta0 = None
         self.niter = 0
 
 
-    def fit(self):
+    def fit(self, maxiter=100, tol=1e-5):
         """Fits the null model."""
-        s = np.inf
-        if not self.binomial:
-            # attempt Beta-Binomial parameter estimation
-            data = np.hstack([self.a, self.d-self.a])
-            # message for the case of failure
-            msg = 'Overdispersion estimate out of bounds.'
-            msg += ' Reverting to Binomial likelihood.'
-            if self.test_cell_state_only:
-                # fit both mean and overdispersion
-                alpha, self.niter = fit_polya(data)
-                if np.isinf(alpha).all() or (alpha == 0).all():
-                    self.binomial = True
-                    print(msg)
-                else:
-                    m, s = reparameterize_polya_alpha(alpha)
-                    self.m0 = m[0]
+        # base rate on the logit scale
+        offset = 0 if self.test_cell_state_only else logit(self.base_rate)
+
+        if self.X is not None:
+            # fit Beta-Binomial GLM
+            theta = 0 if self.binomial else None 
+            self.beta0, self.theta0, self.niter = fit_bb_glm(
+                a=self.a, d=self.d, X=self.X, offset=offset, theta=theta,
+                maxiter=maxiter, tol=tol)
+
+            eta0 = self.X @ self.beta0 + offset
+            mu0 = logistic(eta0)
+        else:
+            # joint test without covariates, only fit dispersion parameter
+            if self.binomial:
+                self.theta0 = 0
             else:
-                # only fit overdispersion parameter
-                m = np.asarray([self.m0, 1-self.m0])
+                m = np.asarray([self.base_rate, 1 - self.base_rate])
+                data = np.hstack([self.a, self.d-self.a])
                 s, self.niter = fit_polya_precision(data, m=m)
-                if np.isinf(s) or (s == 0):
-                    s = np.inf
-                    self.binomial = True
-                    print(msg)
 
-        if self.binomial and self.test_cell_state_only:
-            # no overdispersion estimate desired / possible, estimate mean
-            self.m0 = self.a.sum() / self.d.sum()
+                self.theta0 = np.inf if s == 0 else 1/s
 
-        # compute overdispersion parameter, note 1/np.inf = 0
-        self.theta0 = 1/s
+            eta0 = offset
+            mu0 = self.base_rate
+
+        d = self.d
+        theta0 = self.theta0
+        if np.isinf(self.theta0):
+            # Bernoulli model, substitute limit
+            d = (d > 0).astype(float)
+            theta = 0
 
         # compute the inverse noise covariance
-        # for a Binomial likelihood (theta0=0) V_inv simply corresponds to the
+        # for a Binomial likelihood (theta0=0) W0 simply corresponds to the
         # variance, because the logit is the canonical link function
-        self.V_inv = self.d * self.m0 * (1 - self.m0) * (self.theta0 + 1)
-        self.V_inv = self.V_inv / (self.d * self.theta0 + 1)
+        self.W0 = d * mu0 * (1 - mu0) * (theta0 + 1)
+        self.W0 = self.W0 / (d * theta0 + 1)
 
         # compute the derivative of the logit link function at the mean
-        self.gprime = 1 / ((1-self.m0) * self.m0)
+        self.gprime = 1 / ((1 - mu0) * mu0)
 
         # working vector
-        self.y = self.gprime * (self.r - self.m0)
-        if self.test_cell_state_only:
-            # m0 was estimated
-            self.y += logit(self.m0)
+        self.y = eta0 + self.gprime * (self.r - mu0) - offset
+
+        if self.X is not None:
+            self.Lh = cho_factor((self.W0 * self.X).T @ self.X)
 
 
     def test(self, return_rho=False):
@@ -270,15 +284,13 @@ class DaliJoint(DaliModule):
         return Fs, eigenvals
 
 
-    def _P(self, X):
+    def _P(self, v):
         """Project out fixed effects."""
-        VinvX = self.V_inv * X
-        if self.test_cell_state_only:
-            PX = self.V_inv @ VinvX.sum(0, keepdims=True)
-            PX = VinvX - PX / self.V_inv.sum()
-            return PX
+        W0v = self.W0 * v
+        if self.X is not None:
+            return W0v - (self.W0 * self.X) @ cho_solve(self.Lh, self.X.T @ W0v)
         else:
-            return VinvX
+            return W0v
 
 
     def _approximate_score_dist(self, Qs, lambdas):
@@ -350,6 +362,7 @@ class DaliHet(DaliJoint):
         a,
         d,
         E,
+        X=None,
         binomial=False):
         """Creates the model.
 
@@ -357,11 +370,14 @@ class DaliHet(DaliJoint):
             a: Counts for the alternative allele in each cell.
             d: Total counts for both alleles in each cell.
             E: Environment / cell-state matrix.
+            X: Covariate matrix. Please note that X must not be used to add an
+                intercept term (column of ones). An intercept is automatically
+                added. 
             binomial (bool): Use a Binomial likelihood (True) instead of a Beta-
                 Binomial model (False).
         """
         super().__init__(
-            a=a, d=d, E=E,
+            a=a, d=d, E=E, X=X,
             test_cell_state_only=True,
             binomial=binomial)
 
@@ -373,6 +389,7 @@ class DaliHom(DaliJoint):
     def __init__(self,
         a,
         d,
+        X=None,
         base_rate=.5,
         binomial=False):
         """Creates the model.
@@ -380,12 +397,15 @@ class DaliHom(DaliJoint):
         Args
             a: Counts for the alternative allele in each cell.
             d: Total counts for both alleles in each cell.
-            base_rate: Base/null mean rate (ignored if test_cell_state_only)
+            X: Covariate matrix. Please note that X must not be used to add an
+                intercept term (column of ones) as it is part of the 
+                alternative model.
+            base_rate: Base/null mean rate. 
             binomial (bool): Use a Binomial likelihood (True) instead of a Beta-
                 Binomial model (False).
         """
         super().__init__(
-            a=a, d=d, E=np.ones((a.shape[0], 1)),
+            a=a, d=d, E=np.ones((a.shape[0], 1)), X=X,
             base_rate=base_rate,
             test_cell_state_only=False,
             rhos=[1.],

@@ -28,6 +28,7 @@ MODELS = {
 def run_scdali(
         A, D,
         model,
+        X=None,
         cell_state=None,
         return_rho=False,
         base_rate=None,
@@ -61,6 +62,7 @@ def run_scdali(
                 test for example if allelic ratios differ from .5. Does not
                 require cell_state but base_rate to be specified.
             'GP' - GP model for allelic rate estimation. Requires cell_state.
+        X: Optional design matrix (scDALI models only).
         return_rho: When model is scDALI-Joint, this flag indicates whether to
             return rho, the fraction of allelic variation explained by global
             imbalance.
@@ -83,6 +85,9 @@ def run_scdali(
     D = atleast_2d_column(D)
     A = atleast_2d_column(A)
 
+    if X is not None:
+        X = atleast_2d_column(X)
+
     if A.shape != D.shape:
         raise ValueError('A and D need to be of the same shape.')
 
@@ -101,13 +106,15 @@ def run_scdali(
     init_kwargs = {}
     fit_kwargs = {}
     if model in ['scDALI-Joint', 'scDALI-Hom', 'BB-LRT']:
-        init_kwargs['base_rate'] =  base_rate
+        init_kwargs['base_rate'] = base_rate
     if model == 'GP':
         init_kwargs['kernel'] = gp_kernel
         init_kwargs['num_inducing'] = gp_num_inducing 
-        fit_kwargs['maxiter'] =  gp_maxiter
+        fit_kwargs['maxiter'] = gp_maxiter
     if model in ['scDALI-Joint', 'scDALI-Het', 'GP', 't-test']:
         init_kwargs['E'] = cell_state
+    if model in ['scDALI-Joint', 'scDALI-Het', 'scDALI-Hom']:
+        init_kwargs['X'] = X
 
 
     n_cores = min(n_cores, D.shape[1])
