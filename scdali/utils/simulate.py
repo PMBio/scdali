@@ -7,7 +7,8 @@ from scdali.utils.matop import atleast_2d_column, preprocess_clusters
 from scdali.utils.stats import logistic
 
 
-def simulate_beta_binomial(K, D, sigma2, theta, mu=0, invlink=logistic, seed=None):
+def simulate_beta_binomial(
+    K, D, sigma2, theta, mu=0, invlink=logistic, seed=None):
     """Simulates from binomial Gaussian process with Beta latent noise.
 
     Args:
@@ -15,10 +16,10 @@ def simulate_beta_binomial(K, D, sigma2, theta, mu=0, invlink=logistic, seed=Non
             or create_rbf_kernel.
         D: Array of total counts.
         sigma2: Kernel variance component.
-        theta: Overdispersion parameter. If zero, sample from a regular Binomial
+        theta: Dispersion parameter. If zero, sample from a regular Binomial
             distribution instead.
-        mu: Latent mean. Defaults to zero, which corresponds to a binomial mean
-            of 0.5.
+        mu: Optional fixed effects on a logit scale. Defaults to zero, which
+            corresponds to a binomial mean of 0.5.
         invlink: Inverse link function. Defaults to invlogit.
         seed: Random seed.
 
