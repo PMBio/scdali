@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="dali",
+    name="scdali",
     version="0.0.1",
     author="Tobi Heinen",
     author_email="t.heinen@dkfz.de",
