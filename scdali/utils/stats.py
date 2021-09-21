@@ -4,6 +4,8 @@ from scdali.utils.matop import atleast_2d_column
 import numpy as np
 from scipy.special import digamma
 from scipy.special import polygamma
+from scipy.stats import binom, betabinom
+
 trigamma = lambda x: polygamma(1, x)
 
 
@@ -321,7 +323,7 @@ def compute_bb_nll(a, d, mu, theta):
     Args:
         a: Vector successes.
         d: Vector of trials.
-        mu: Mean of the distribution.
+        mu: Mean of the distribution. Has to be the same shape as a and d.
         theta: Dispersion parameter.
 
     Returns:
@@ -343,9 +345,11 @@ def compute_bb_nll(a, d, mu, theta):
     elif np.isinf(theta):
         nll = -binom(n=d>0, p=mu).logpmf(a>0).sum()
     else:
-        alpha = reparameterize_polya(np.hstack([mu, 1-mu]), 1/theta)
+        alpha = reparameterize_polya_ms(np.hstack([mu, 1-mu]), 1/theta)
         nll = -betabinom(
-            n=d, a=alpha[0], b=alpha[1]).logpmf(a).sum()
+            n=d,
+            a=alpha[:, 0, np.newaxis],
+            b=alpha[:, 1, np.newaxis]).logpmf(a).sum()
     return nll
 
 
