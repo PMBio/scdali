@@ -242,7 +242,7 @@ def reparameterize_polya_ms(m, s):
 
 def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
     """Fits generalized linear model with Beta-Binomial likelihood.
-    
+
     Uses iteratively reweighted least squares / Fisher scoring.
 
     Args:
@@ -255,7 +255,7 @@ def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
         tol: Break if mean absolute change in estimated parameters is below tol.
 
     Returns:
-        Regression coefficients, estimated dispersion parameter and number of 
+        Regression coefficients, estimated dispersion parameter and number of
         iterations.
     """
     from numpy_sugar.linalg import rsolve
@@ -274,7 +274,7 @@ def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
         d = (d > 0).astype(float)
         theta = 0
         fit_dispersion = False
-    
+
     if fit_dispersion:
         data = np.hstack([a, d-a])
 
@@ -288,7 +288,7 @@ def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
             m = np.hstack([mu, 1-mu])
             maxiter = min(10**(i+1), 1000)
             (s, niter) = fit_polya_precision(data=data, m=m, maxiter=maxiter)
-            theta = 1/s 
+            theta = 1/s
 
         gprime = 1 / ((1 - mu) * mu)
         z = eta + gprime * (y - mu) - offset
@@ -304,11 +304,48 @@ def fit_bb_glm(a, d, X, offset=0, theta=None, maxiter=100, tol=1e-5):
             break
 
         beta = beta_new
-    
+
     if not converged:
         print('Warning: Model did not converge. Try increasing maxiter.')
 
     if is_bernoulli:
         theta = np.inf
     return beta, theta, i
+
+
+def compute_bb_nll(a, d, mu, theta):
+    """Computes negative log-likelihood for Beta-Binomial model.
+
+    Covers limit cases theta = 0 (Binomial) and theta = inf (Bernoulli).
+
+    Args:
+        a: Vector successes.
+        d: Vector of trials.
+        mu: Mean of the distribution.
+        theta: Dispersion parameter.
+
+    Returns:
+        Negative log-likelihood.
+    """
+    a = atleast_2d_column(a)
+    d = atleast_2d_column(d)
+    mu = atleast_2d_column(mu)
+
+    if (mu > 1).any() or (mu < 0).any():
+        raise ValueError('mu has to be between 0 and 1.')
+    if a.size != d.size or a.size != mu.size:
+        raise ValueError('a, d and mu have to be of the same size.')
+    if theta < 0:
+        raise ValueError('theta has to be non-negative.')
+
+    if theta == 0:
+        nll = -binom(n=d, p=mu).logpmf(a).sum()
+    elif np.isinf(theta):
+        nll = -binom(n=d>0, p=mu).logpmf(a>0).sum()
+    else:
+        alpha = reparameterize_polya(np.hstack([mu, 1-mu]), 1/theta)
+        nll = -betabinom(
+            n=d, a=alpha[0], b=alpha[1]).logpmf(a).sum()
+    return nll
+
 
