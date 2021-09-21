@@ -21,7 +21,7 @@ class OLS(DaliModule):
         Args
             a: Counts for the alternative allele in each cell.
             d: Total counts for both alleles in each cell.
-            E: Cluster labels for each cell.
+            E: Environment / cell-state matrix.
             X: Covariate matrix. Please note that X must not be used to add an
                 intercept term (column of ones). An intercept is always
                 added automatically.
