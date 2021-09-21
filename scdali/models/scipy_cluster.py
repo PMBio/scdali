@@ -9,7 +9,8 @@ from scdali.utils.stats import freeman_tukey
 from scdali.models.core import DaliModule
 
 
-MODELS = ['ttest_ind', 'f_oneway', 'kruskal', 'alexandergovern']
+MODELS = ['ttest_ind', 'f_oneway', 'kruskal']
+# MODELS = ['ttest_ind', 'f_oneway', 'kruskal', 'alexandergovern']
 
 MIN_COUNTS_PER_CLUSTER = 2
 
@@ -56,7 +57,8 @@ class ScipyClusterTest(DaliModule):
             raise ValueError('ttest_ind requires exactly two clusters')
 
         if model not in MODELS:
-            raise ValueError('Unrecognized model %s' % model)
+            raise ValueError('Unrecognized model %s. '
+                'Choices are %s.' % (model, ', '.join(MODELS)))
         self.model = getattr(scipy.stats, model)
 
 
@@ -78,6 +80,6 @@ class ScipyClusterTest(DaliModule):
 
         samples = [self.r[E == i, :] for i in range(int(E.max()) + 1)]
         _, pvalue = self.model(*samples)
-        return pvalue
+        return pvalue.item()
 
 
