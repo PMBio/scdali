@@ -38,9 +38,9 @@ class OLS(DaliModule):
 
 
     def fit(self):
-        X = sm.add_constant(self.X) if self.X is None else np.ones_like(self.r)
-        self.fit_null = sm.OLS(self.r, np.hstack([self.E, X])).fit()
-        self.fit_alt = sm.OLS(self.r, X).fit()
+        X = np.ones_like(self.r) if self.X is None else sm.add_constant(self.X)
+        self.fit_alt = sm.OLS(self.r, np.hstack([self.E, X])).fit()
+        self.fit_null = sm.OLS(self.r, X).fit()
 
 
     def test(self):
