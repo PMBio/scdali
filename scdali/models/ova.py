@@ -9,6 +9,8 @@ from scdali.models.core import DaliModule
 from scdali.models.scipy_cluster import ScipyClusterTest
 from scdali.models.lm import OLS
 
+from statsmodels.stats.multitest import multipletests
+
 
 class OneVsAllTest(DaliModule):
     """Apply a test separately for each cell-state dimension.
@@ -41,13 +43,13 @@ class OneVsAllTest(DaliModule):
     def fit(self):
         for i in range(self.k):
             sub_model = self.dali_module(
-                a=a, d=d, E=E[:, i, np.newaxis],
+                a=self.a, d=self.d, E=self.E[:, i, np.newaxis],
                 **self.init_kwargs)
             sub_model.fit()
             self.pvalues.append(sub_model.test())
 
 
-    def test(self, comine_pvals=True):
+    def test(self, combine_pvals=True):
         """Test for cell-state-specific effects.
 
         Args:
