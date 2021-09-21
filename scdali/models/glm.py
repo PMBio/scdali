@@ -7,6 +7,7 @@ from scipy.stats import chi2, betabinom, binom
 from scdali.models.core import DaliModule
 from scdali.utils.stats import logistic
 from scdali.utils.stats import fit_bb_glm
+from scdali.utils.stats import compute_bb_nll
 
 
 class BetaBinomialGLM(DaliModule):
@@ -36,7 +37,7 @@ class BetaBinomialGLM(DaliModule):
         self.binomial = binomial
 
         # add intercept
-        ones = np.ones_like(self.r)
+        ones = np.ones_like(self.a)
         if self.X is not None:
             self.X = np.hstack([self.X, ones])
         else:
@@ -61,17 +62,15 @@ class BetaBinomialGLM(DaliModule):
         self.beta0, self.theta0, self.niter = fit_bb_glm(
             a=self.a, d=self.d, X=X, theta=theta,
             maxiter=maxiter, tol=tol)
-        eta0 = X @ self.beta0
-        mu0 = logistic(eta0)
+        mu0 = logistic(X @ self.beta0)
         self.nll0 = compute_bb_nll(
             a=self.a, d=self.d, mu=mu0, theta=self.theta0)
 
-        X = np.hstack([self.E, X])
+        X = np.hstack([self.E, self.X])
         self.beta1, self.theta1, self.niter = fit_bb_glm(
-            a=self.a, d=self.d, X=self.X, theta=theta,
+            a=self.a, d=self.d, X=X, theta=theta,
             maxiter=maxiter, tol=tol)
-        eta1 = X @ self.beta1
-        mu1 = logistic(eta1)
+        mu1 = logistic(X @ self.beta1)
         self.nll1 = compute_bb_nll(
             a=self.a, d=self.d, mu=mu1, theta=self.theta1)
 
@@ -82,7 +81,7 @@ class BetaBinomialGLM(DaliModule):
         Returns:
             P-value.
         """
-        pval = chi2.sf(2*(self.nll0 - self.nll1), df=1)
+        pval = chi2.sf(2*(self.nll0 - self.nll1), df=self.k)
         return pval
 
 
