@@ -8,8 +8,8 @@ from scipy.linalg import cho_factor, cho_solve
 from chiscore import davies_pvalue, optimal_davies_pvalue, liu_sf
 
 from scdali.models.core import DaliModule
-from scdali.utils.stats import logit, logistic, reparameterize_polya_alpha
-from scdali.utils.stats import fit_polya, fit_polya_precision, fit_bb_glm
+from scdali.utils.stats import logit, logistic 
+from scdali.utils.stats import fit_polya_precision, fit_bb_glm
 
 
 JITTER = 1e-7
