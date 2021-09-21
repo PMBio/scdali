@@ -31,10 +31,10 @@ def aggregate_rows(x, groups, fun='mean'):
     if isspmatrix(x):
         x = x.tocsr()
 
-    n_groups = len(np.unique(groups))
+    n_groups = int(np.max(groups) + 1)
     x_agg = np.zeros([n_groups, x.shape[1]])
 
-    for group in np.unique(groups):
+    for group in range(n_groups):
         if fun == 'mean':
             x_agg[group, :] = x[groups == group, :].mean(0)
         elif fun == 'std':
