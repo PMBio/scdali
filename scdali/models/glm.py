@@ -59,7 +59,7 @@ class BetaBinomialGLM(DaliModule):
         theta = 0 if self.binomial else None
 
         X = self.X
-        self.beta0, self.theta0, self.niter = fit_bb_glm(
+        self.beta0, self.theta0, self.niter0 = fit_bb_glm(
             a=self.a, d=self.d, X=X, theta=theta,
             maxiter=maxiter, tol=tol)
         mu0 = logistic(X @ self.beta0)
@@ -67,7 +67,7 @@ class BetaBinomialGLM(DaliModule):
             a=self.a, d=self.d, mu=mu0, theta=self.theta0)
 
         X = np.hstack([self.E, self.X])
-        self.beta1, self.theta1, self.niter = fit_bb_glm(
+        self.beta1, self.theta1, self.niter1 = fit_bb_glm(
             a=self.a, d=self.d, X=X, theta=theta,
             maxiter=maxiter, tol=tol)
         mu1 = logistic(X @ self.beta1)
