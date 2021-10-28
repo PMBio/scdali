@@ -1,3 +1,3 @@
-from scdali.run_scdali import run_tests
-from scdali.run_scdali import run_interpolation
+from scdali.run_scdali_tests import run_tests
+from scdali.run_scdali_interpolation import run_interpolation
 
