@@ -137,10 +137,11 @@ class SparseGP(DaliModule):
     def compute_posterior(self, E=None, full_cov=False):
         """Computes the mean and variances of the posterior over latent rates."""
         E = self.E if E is None else atleast_2d_column(E)
-        mu, covar = self.model.predict_f(E, full_cov=full_cov)
+        mu, covar = self.model.predict_f(
+            E.astype(np.float64), full_cov=full_cov)
         if full_cov:
             covar = covar[0, :, :]
-        return mu.numpy(), covar.numpy()
+        return mu.numpy().astype(np.float32), covar.numpy().astype(np.float32)
 
 
     def compute_explained_variance(self):

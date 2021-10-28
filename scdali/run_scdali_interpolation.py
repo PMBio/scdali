@@ -4,8 +4,6 @@ from functools import partial
 
 import numpy as np
 
-from scdali.models import SparseGP
-
 from scdali.utils.run_model import run_model, create_method_callback
 from scdali.utils.parallel import process_parallel
 from scdali.utils.matop import atleast_2d_column
@@ -42,6 +40,8 @@ def run_interpolation(
     Returns:
         Estimated posterior mean and variances for each region.
     """
+    from scdali.models.gp import SparseGP
+
     D = atleast_2d_column(D)
     A = atleast_2d_column(A)
 
@@ -53,12 +53,10 @@ def run_interpolation(
 
     init_kwargs = {}
     fit_kwargs = {}
-    if model == 'GP':
-        init_kwargs['kernel'] = gp_kernel
-        init_kwargs['num_inducing'] = gp_num_inducing
-        fit_kwargs['maxiter'] = gp_maxiter
-        init_kwargs['E'] = cell_state
-
+    init_kwargs['kernel'] = gp_kernel
+    init_kwargs['num_inducing'] = gp_num_inducing
+    fit_kwargs['maxiter'] = gp_maxiter
+    init_kwargs['E'] = cell_state
 
     n_cores = min(n_cores, D.shape[1])
     print('[scdali] Processing %d regions on %d core(s) ... ' % (D.shape[1], n_cores), flush=True)
@@ -71,7 +69,7 @@ def run_interpolation(
     show_progress = False if n_cores > 1 else True
     f = partial(
             run_model,
-            m,
+            SparseGP,
             init_kwargs=init_kwargs,
             fit_kwargs=fit_kwargs,
             callbacks=callbacks,
