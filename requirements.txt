@@ -5,3 +5,4 @@ numpy==1.18.0
 scipy==1.5.3
 statsmodels==0.12.0
 tqdm==4.50.2
+numpy_sugar==1.5.3

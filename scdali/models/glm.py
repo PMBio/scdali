@@ -81,6 +81,7 @@ class BetaBinomialGLM(DaliModule):
         Returns:
             P-value.
         """
+        # TODO deal with multicollinearity
         pval = chi2.sf(2*(self.nll0 - self.nll1), df=self.k)
         return pval
 
