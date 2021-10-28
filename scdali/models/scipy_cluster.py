@@ -52,7 +52,7 @@ class ScipyClusterTest(DaliModule):
 
         self.n_clusters = int(self.E.max() + 1)
         if self.n_clusters < 2:
-            raise ValueError('Tests require more than two clusters.')
+            raise ValueError('Tests require at least two clusters.')
         if self.n_clusters > 2 and model == 'ttest_ind':
             raise ValueError('ttest_ind requires exactly two clusters')
 
@@ -73,12 +73,24 @@ class ScipyClusterTest(DaliModule):
             P-value.
         """
         E = self.E.flatten()
+        d = self.d
+        r = self.r
 
-        d_cluster = aggregate_rows(self.d > 0, E, fun='sum')
-        if (d_cluster < MIN_COUNTS_PER_CLUSTER).any():
+        d_cluster = aggregate_rows(d > 0, E, fun='sum')
+        to_keep = np.where(d_cluster >= MIN_COUNTS_PER_CLUSTER)[0]
+        if to_keep.size < 2: # need at least 2 clusters to compare
+            print('Warning: Insufficient counts per cluster.')
             return np.nan
 
-        samples = [self.r[E == i, :] for i in range(int(E.max()) + 1)]
+        if self.n_clusters - to_keep.size > 0:
+            # some clusters were dropped, reindex clusters
+            ids = np.in1d(E, to_keep)
+            E, _ = preprocess_clusters(E[ids])
+            d = d[ids, :]
+            r = r[ids, :]
+
+        n_clusters = int(E.max() + 1)
+        samples = [r[E == i, :] for i in range(n_clusters)]
         _, pvalue = self.model(*samples)
         return pvalue.item()
 
