@@ -1,4 +1,7 @@
-## scDALI
+---
+layout: default
+title: scDALI
+---
 
 scDALI (single-cell differential allelic imbalance) is a statistical model and analysis framework that leverages allele-specific analyses of single-cell data to decode cell-state-specific genetic regulation. 
 
