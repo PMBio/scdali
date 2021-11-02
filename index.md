@@ -1,37 +1,9 @@
-## Welcome to GitHub Pages
+## scDALI
 
-You can use the [editor on GitHub](https://github.com/PMBio/scdali/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+scDALI (single-cell differential allelic imbalance) is a statistical model and analysis framework that leverages allele-specific analyses of single-cell data to decode cell-state-specific genetic regulation. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The key idea of the scDALI workflow is the integration of two independent signals that can be extracted from the same single cell sequencing experiment: total counts and allele-specific quantifications. First, total read counts are used to define a cell state representation, applying established methods for dimensionality reduction, cell clustering or the inference of pseudo-temporal orderings. Second, from the same dataset, allele-specific counts from matched cells are extracted, which allow for quantifying allelic imbalances and therefore genetic effects. scDALI connects these two signals in order to detect heterogeneous (state-specific allelic) as well as homogeneous imbalances.
 
-### Markdown
+![Abstract](https://raw.githubusercontent.com/PMBio/scdali/main/.github/images/github_graphical_abstract.png)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/PMBio/scdali/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+For more information on the scDALI method along with evaluations on real and simulated data, please refer to our [preprint](https://www.biorxiv.org/content/10.1101/2021.03.19.436142v1).
