@@ -7,4 +7,4 @@ title: Contact
 
 <strong>Tobias Heinen</strong>\
 Predoctoral Scientist at DKFZ\
-t.heinen@dkfz.de
+<a href="mailto:t.heinen@dkfz.de">t.heinen@dkfz.de</a>
