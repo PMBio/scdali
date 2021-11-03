@@ -3,7 +3,7 @@ layout: default
 title: "Usage"
 ---
 
-<strong>scDALI</strong> requires two inputs: A cell state representation and allele-specific read counts for a set of genomic features and each cell.
+<strong>scDALI</strong> requires two inputs: A cell state representation and allele-specific read counts for a set of genomic features and each cell. Here we will briefly discuss the generation of input files and how to run scDALI. For a more in-depth example, check out the Jupyter notebooks in the tutorial section.
 
 ## Processing of total counts & cell-state definition
 
@@ -46,5 +46,14 @@ To learn more about the different function arguments, we can call
 
 ## Downstream analysis & interpretation
 
+Once a set of regions with cell-state-specific allelic imbalance has been identified, we can interpolate the landscape of allelic rates and visualize these estimates on top of a UMAP or t-SNE representation of the cell state space. 
+
+    from scdali import run_interpolation
+    
+    results = run_interpolation(A, D, cell_state)
+    estimated_rates = results['posterior_mean']
+    estimated_uncertainties = results['posterior_var']
+    
+The scDALI interpolation will estimate both the posterior means and variances of allelic rates per cell. 
 
 ## Low-level scDALI interface
