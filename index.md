@@ -9,4 +9,6 @@ The key idea of the scDALI workflow is the integration of two independent signal
 
 ![Abstract](https://raw.githubusercontent.com/PMBio/scdali/main/.github/images/github_graphical_abstract.png)
 
+Conceptionally, the scDALI approach is similar to differential gene expression testing. However, instead of identifying differentially expressed genes between cell types or states, scDALI captures differential allelic imbalance. scDALI can model both continuous and discrete cell states and does not require to discretize the cell-state space <em>a priori</em>.
+
 For more information on the scDALI method along with evaluations on real and simulated data, please refer to our [preprint](https://www.biorxiv.org/content/10.1101/2021.03.19.436142v1).
