@@ -3,7 +3,7 @@ layout: default
 title: "Usage"
 ---
 
-<strong>scDALI</strong> requires two inputs: A cell state representation and allele-specific read counts for a set of genomic features and each cell. Here we will briefly discuss the generation of input files and how to run scDALI. For a more in-depth example, check out the Jupyter notebooks in the [Tutorial](https://pmbio.github.io/scdali/tutorials) section.
+<strong>scDALI</strong> requires two inputs: A cell state representation and allele-specific read counts for a set of genomic features and each cell. Here we will briefly discuss the generation of input files and how to run scDALI. For a full example, check out the Jupyter notebooks in the [Tutorial](https://pmbio.github.io/scdali/tutorials) section.
 
 ## Processing of total counts & cell-state definition
 
