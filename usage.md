@@ -54,6 +54,10 @@ Once a set of regions with cell-state-specific allelic imbalance has been identi
     estimated_rates = results['posterior_mean']
     estimated_uncertainties = results['posterior_var']
     
-The scDALI interpolation will estimate both the posterior means and variances of allelic rates per cell. 
+The scDALI interpolation will estimate both the posterior means and variances of allelic rates per cell. Again we can call
+    
+    help(run_interpolation)
+    
+for more info.
 
 ## Low-level scDALI interface
