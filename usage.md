@@ -13,9 +13,9 @@ The cell state representation can be generated from the matrix of total read cou
 
 Allele-specific read counts for a set of genomic regions can be obtained by using heterozygous genetic variants as natural barcodes. Note that we do not have to use the same set of genomic regions as used for the cell state definition. For example, when working with scATAC-seq data we might want to use larger windows centered on peaks of accessibility to mitigate the sparsity of the data. 
 
-To generate allele-specific counts matrices, we recommend following the approach taken by [WASP](https://github.com/bmvdgeijn/WASP), a suite of tools for the unbiased mapping of allele-specific reads. In particular, WASP involves a filtering step to reduce potential reference mapping biases. While mapping biases will not lead to false positive results when testing for heterogeneous allelic imbalance (as all cells will be affected equally), they do need to be removed before applying scDALI-Hom (test for homogeneous imbalance) or scDALI-Joint (test for heterogeneous or homogeneous imbalance).
+We recommend following the approach taken by [WASP](https://github.com/bmvdgeijn/WASP), a suite of tools for the unbiased mapping of allele-specific reads. In particular, WASP involves a filtering step to reduce potential reference mapping biases. While mapping biases will not lead to false positive results when testing for heterogeneous allelic imbalance (as all cells will be affected equally), they do need to be removed before applying scDALI-Hom (test for homogeneous imbalance) or scDALI-Joint (test for heterogeneous or homogeneous imbalance).
 
-WASP was originally developped for bulk sequencing data. We will update this site to include a reference to a modified version for single-cell data in the future.
+After filtering reads for mapping biases using WASP, [allele-specific count matrices can be generated](https://github.com/tohein/scai_utils) using a (phased) .vcf file of heterozygous variants.
 
 ## Running the scDALI test
 
