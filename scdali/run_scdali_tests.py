@@ -49,8 +49,7 @@ def run_tests(
         X: Optional design matrix.
         return_rho: When model is scDALI-Joint, this flag indicates whether to
             return rho, the fraction of allelic variation explained by global
-            imbalance.
-        cell_state: Matrix of cell states, e.g. clusters or coordinates
+            imbalance.  cell_state: Matrix of cell states, e.g. clusters or coordinates
             in a low-dimensional cell-state space.
         base_rate: Null allelic rate.
         n_cores: Number of cores to use.
@@ -71,7 +70,7 @@ def run_tests(
         m = MODELS[model]
     except KeyError:
         msg = ('Model not recognized. Choices are '
-            ', '.join(MODELS.keys()) + '.')
+            + ', '.join(MODELS.keys()) + '.')
         raise ValueError(msg)
 
     if model in ['scDALI-Joint', 'scDALI-Het'] and cell_state is None:
