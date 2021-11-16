@@ -26,6 +26,7 @@ setuptools.setup(
         "gpflow",
         "joblib",
         "statsmodels",
-        "tqdm"
+        "tqdm",
+        "numpy_sugar"
     ]
 )
