@@ -12,11 +12,10 @@ from scdali.utils.matop import atleast_2d_column
 def run_interpolation(
         A, D,
         cell_state,
-        return_rho=False,
-        gp_kernel='Linear',
-        gp_num_inducing=800,
-        gp_maxiter=2000,
-        return_gp_prior_mean=False,
+        kernel='Linear',
+        num_inducing=800,
+        maxiter=2000,
+        return_prior_mean=False,
         n_cores=1):
     """Run scDALI interpolation of allelic rates for each region.
 
@@ -26,15 +25,12 @@ def run_interpolation(
     Args:
         A: Alternative counts for each cell and region.
         D: Total counts for each cell and region.
-        return_rho: When model is scDALI-Joint, this flag indicates whether to
-            return rho, the fraction of allelic variation explained by global
-            imbalance.
         cell_state: Matrix of cell states, e.g. clusters or coordinates
             in a low-dimensional cell-state space.
-        gp_kernel: Kernel function for GP interpolation, e.g. 'Linear' or 'RBF'.
-        gp_num_inducing: Number of inducing points for the GP model
-        gp_maxiter: Max iterations for GP optimization.
-        return_gp_prior_mean: Return the estimated GP prior mean.
+        kernel: Kernel function for GP interpolation, e.g. 'Linear' or 'RBF'.
+        num_inducing: Number of inducing points for the GP model
+        maxiter: Max iterations for GP optimization.
+        return_prior_mean: Return the estimated GP prior mean.
         n_cores: Number of cores to use.
 
     Returns:
@@ -53,9 +49,9 @@ def run_interpolation(
 
     init_kwargs = {}
     fit_kwargs = {}
-    init_kwargs['kernel'] = gp_kernel
-    init_kwargs['num_inducing'] = gp_num_inducing
-    fit_kwargs['maxiter'] = gp_maxiter
+    init_kwargs['kernel'] = kernel
+    init_kwargs['num_inducing'] = num_inducing
+    fit_kwargs['maxiter'] = maxiter
     init_kwargs['E'] = cell_state
 
     n_cores = min(n_cores, D.shape[1])
@@ -63,7 +59,7 @@ def run_interpolation(
 
     callbacks = []
     callbacks.append(create_method_callback('compute_posterior', E=cell_state))
-    if return_gp_prior_mean:
+    if return_prior_mean:
         callbacks.append(create_method_callback('get_prior_mean'))
 
     show_progress = False if n_cores > 1 else True
@@ -82,7 +78,7 @@ def run_interpolation(
     out = dict()
     out['posterior_mean'] = np.asarray([r[0][0].flatten() for r in results]).T
     out['posterior_var'] = np.asarray([r[0][1].flatten() for r in results]).T
-    if return_gp_prior_mean:
+    if return_prior_mean:
         out['prior_mean'] = [float(r[1]) for r in results]
     return out
 
