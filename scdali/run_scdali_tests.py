@@ -47,6 +47,8 @@ def run_tests(
                 for homogeneous allelic imbalance.
                 Requires base_rate.
         X: Optional design matrix.
+        cell_state: Numerical vector or matrix of cell states, e.g. clusters or
+            coordinates in a low-dimensional cell-state space.
         return_rho: When model is scDALI-Joint, this flag indicates whether to
             return rho, the fraction of allelic variation explained by global
             imbalance.  cell_state: Matrix of cell states, e.g. clusters or coordinates

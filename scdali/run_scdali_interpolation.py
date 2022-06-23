@@ -25,8 +25,8 @@ def run_interpolation(
     Args:
         A: Alternative counts for each cell and region.
         D: Total counts for each cell and region.
-        cell_state: Matrix of cell states, e.g. clusters or coordinates
-            in a low-dimensional cell-state space.
+        cell_state: Numerical vector or matrix of cell states, e.g. clusters or
+            coordinates in a low-dimensional cell-state space.
         kernel: Kernel function for GP interpolation, e.g. 'Linear' or 'RBF'.
         num_inducing: Number of inducing points for the GP model
         maxiter: Max iterations for GP optimization.
